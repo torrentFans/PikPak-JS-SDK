@@ -127,6 +127,7 @@ class Popup {
 		if (hash) {
 			a.href = `${a.href}&__campaign=${hash}`;
 		}
+		a.target = '_blank';
 		a.click();
 		this.closePopup();
 	}
