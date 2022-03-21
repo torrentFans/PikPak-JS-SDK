@@ -9,9 +9,9 @@
 
 <script src="./pikpak-sdk.umd.js"></script>
 <script>
-	// init接受一个参数(apk下载地址, 不填将使用默认apk下载地址)
-	PikPak.init();
-<script>
+	// init接受两个参数(apk下载地址, 不填将使用默认apk下载地址), source值
+	PikPak.init('https://xxxx/PikPak.apk', 'PikPak-SDK');
+</script>
 ```
 
 ## 2.开发启动流程

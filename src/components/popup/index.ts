@@ -1,5 +1,6 @@
 import htm from 'htm';
 import style from './index.less';
+import QRCode from '../../lib/qrcode.js';
 import { h, render } from 'preact';
 import { resourceType, getTitleFromUrl, isPC } from '../../utils';
 
@@ -37,16 +38,24 @@ class Popup {
 	private resourceTitle: string = ''
 	private apkURL: string = 'https://download.mypikpak.com/app/default_PikPak.apk';
 	private deepLink: string = 'pikpakapp://xpan/main_tab?tab=1&add_url=';
+	private url: string = '';
+	private source: string = 'PikPak-SDK';
 	private el: HTMLElement;
-	constructor(el: HTMLElement, url: string, apkURL: string) {
+	constructor(el: HTMLElement, url: string, apkURL: string, source: string) {
 		this.clearMountedPopup();
 		this.clickBlankClosePopup();
 		this.el = el;
+		this.url = url;
 		this.apkURL = apkURL;
+		this.source = source;
 		this.icon = resourceType(url);
 		this.resourceTitle = getTitleFromUrl(url);
 		this.type = isPC() ? clientType.PC : clientType.MOBILE;
 		this.deepLink = `pikpakapp://xpan/main_tab?tab=1&add_url=${url}`;
+		let timer = setTimeout(() => {
+			this.renderQRCode();
+			clearTimeout(timer);
+		}, 0);
 	}
 	getInstance() {
 		return () => {
@@ -69,8 +78,17 @@ class Popup {
 							<div class="resource-info-title__text" title="${this.resourceTitle}">${this.resourceTitle}</div>
 						</div>
 					</div>
-					<div class="install-apk" onclick=${this.installPikPak}>安装 PikPak</div>
-					<div class="had-install" onclick=${this.saveToPikPak}>已经安装 PikPak 点此添加资源</div>
+					<div class="pikpak-qrcode-wrapper">
+						<canvas id="pikpak-landing-code"></canvas>
+					</div>
+					<div class="install-apk" onclick=${this.installPikPak}>下载 PikPak APK</div>
+					${
+						this.type === clientType.PC ? html`
+							<div class="had-install" onclick=${() => this.openPikPakWeb()}>使用 PikPak 网页版(需科学上网)</div>
+						` : html`
+							<div class="had-install" onclick=${this.saveToPikPak}>已经安装 PikPak 点此添加资源</div>
+						`
+					}
 				</div>
 			</div>`;
 		}
@@ -100,6 +118,27 @@ class Popup {
 		a.href = this.deepLink;
 		a.click();	
 		this.closePopup();
+	}
+	// open PikPak web
+	openPikPakWeb() {
+		const a = document.createElement('a');
+		const hash = this.url.match(/magnet:\?xt\=urn:btih:([a-zA-Z0-9]{32,40})/)?.[1];
+		a.href = `https://drive.mypikpak.com/landing?__add_url=${window.encodeURIComponent(this.url)}&__source=${this.source}`;
+		if (hash) {
+			a.href = `${a.href}&__campaign=${hash}`;
+		}
+		a.click();
+		this.closePopup();
+	}
+	// 渲染二维码
+	renderQRCode() {
+		const canvas = document.getElementById('pikpak-landing-code');
+		(QRCode as any).toCanvas( canvas, this.apkURL, function(error: any) {
+				if (error) {
+					canvas?.parentNode?.removeChild(canvas);
+				}
+			}
+		)
 	}
 	// 非popup区域点击, 关闭popup
 	clickBlankClosePopup() {

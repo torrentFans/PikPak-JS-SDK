@@ -4,6 +4,7 @@ import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2';
 import nodeResolve from '@rollup/plugin-node-resolve';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 export default [
 	{
@@ -17,10 +18,14 @@ export default [
 				file: 'dist/pikpak-sdk.umd.js',
 				format: 'umd',
 				name: 'PikPak',
+				globals: {
+					'qrcode': 'qrcode',
+				},
 			}
-		],
+		],	
 		plugins: [
 			less(),
+			nodePolyfills(),
 			typescript({
 				exclude: 'node_modules/*',
 			}),
@@ -34,6 +39,7 @@ export default [
 				exclude: 'node_modules/*',
 			}),
 			terser(),
-		]
+		],
+		external: ['QRCode'],
 	}
 ]

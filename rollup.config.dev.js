@@ -18,6 +18,9 @@ export default [
 				file: 'dist/pikpak-sdk.umd.js',
 				format: 'umd',
 				name: 'PikPak',
+				globals: {
+					'qrcode': 'QRCode',
+				},
 			}
 		],
 		plugins: [
@@ -40,6 +43,7 @@ export default [
 				port: 8888,
 				contentBase: ['demo/', 'dist/'],
 			}),
-		]
-	}
+		],
+		external: ['qrcode']
+	},
 ]
